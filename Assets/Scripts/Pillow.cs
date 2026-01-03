@@ -9,6 +9,7 @@ public class Pillow : MonoBehaviour
     [Header("Pillow Settings")]
     public float lifetime = 10f; // Hvor lenge puten eksisterer før den forsvinner (økt fra 5)
     public float pushForce = 10f; // Hvor hardt puten dytter spilleren
+    public int damage = 10; // Hvor mye damage puten gjør
     public bool destroyOnHit = true; // Ødelegges ved treff
     
     [Header("Effects")]
@@ -42,6 +43,14 @@ public class Pillow : MonoBehaviour
         // Sjekk om vi traff spilleren
         if (collision.gameObject.CompareTag("Player"))
         {
+            // Gjør damage på spilleren
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damage);
+                Debug.Log($"Pillow hit player! Dealt {damage} damage.");
+            }
+            
             // Dytt spilleren
             Rigidbody playerRb = collision.gameObject.GetComponent<Rigidbody>();
             if (playerRb != null)
@@ -49,8 +58,6 @@ public class Pillow : MonoBehaviour
                 Vector3 pushDirection = (collision.transform.position - transform.position).normalized;
                 pushDirection.y = 0.5f; // Litt opp også
                 playerRb.AddForce(pushDirection * pushForce, ForceMode.Impulse);
-                
-                Debug.Log($"Pillow hit player! Push force: {pushForce}");
             }
             
             // Spawn hit effect
