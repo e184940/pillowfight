@@ -10,14 +10,16 @@ public class PillowCannon : MonoBehaviour
     public Transform firePoint; // Hvor puten spawner (ende av kanon)
     
     [Header("Shooting Settings")]
-    public float shootForce = 15f; // Hvor fort puten skytes
-    public float fireRate = 2f; // Skudd per sekund
+    public float shootForce = 25f; // Hvor fort puten skytes (økt fra 15)
+    public float fireRate = 0.8f; // Skudd per sekund (redusert fra 2)
     public bool autoFire = true; // Skyt automatisk
     
     [Header("Targeting")]
     public bool aimAtPlayer = true; // Sikt mot spilleren
     public Transform target; // Målpunkt (player)
-    public float randomSpread = 5f; // Tilfeldighet i sikting (grader)
+    public float randomSpread = 2f; // Tilfeldighet i sikting (grader)
+    public float aimSpeed = 5f; // Hvor raskt kanonen roterer mot spilleren
+    public float maxPitchAngle = 45f; // Maksimal opp/ned vinkel (grader)
     
     [Header("Visual")]
     public GameObject muzzleFlash; // Effekt når kanon skyter (optional)
@@ -70,11 +72,33 @@ public class PillowCannon : MonoBehaviour
         if (aimAtPlayer && target != null)
         {
             Vector3 direction = target.position - transform.position;
-            direction.y = 0; // Hold horisontalt (ikke sikt opp/ned)
+            
             if (direction != Vector3.zero)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f);
+                // For standard Cylinder (Y-akse er forward):
+                // Vi må bruke Quaternion som peker Y-aksen mot målet
+                
+                // Beregn pitch for å begrense
+                float horizontalDistance = new Vector3(direction.x, 0, direction.z).magnitude;
+                float pitchAngle = Mathf.Atan2(direction.y, horizontalDistance) * Mathf.Rad2Deg;
+                
+                // Begrens pitch
+                pitchAngle = Mathf.Clamp(pitchAngle, -maxPitchAngle, maxPitchAngle);
+                
+                // Rekonstruer direction med begrenset pitch
+                if (Mathf.Abs(pitchAngle) == maxPitchAngle)
+                {
+                    float pitchRad = pitchAngle * Mathf.Deg2Rad;
+                    Vector3 horizontalDir = new Vector3(direction.x, 0, direction.z).normalized;
+                    direction = horizontalDir * Mathf.Cos(pitchRad) + Vector3.up * Mathf.Sin(pitchRad);
+                }
+                
+                // Bruk Quaternion.LookRotation men med Y-akse som "up"
+                // For Cylinder: Y-akse skal peke mot målet
+                Quaternion targetRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(-90, 0, 0);
+                
+                // Smooth rotasjon
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * aimSpeed);
             }
         }
     }
@@ -90,8 +114,20 @@ public class PillowCannon : MonoBehaviour
         // Spawn pillow
         GameObject pillow = Instantiate(pillowPrefab, firePoint.position, firePoint.rotation);
         
-        // Calculate direction with random spread
-        Vector3 direction = firePoint.forward;
+        // Calculate direction - sikt mot spilleren hvis aimAtPlayer er på
+        Vector3 direction;
+        if (aimAtPlayer && target != null)
+        {
+            // Sikt direkte mot spilleren (med spread)
+            direction = (target.position - firePoint.position).normalized;
+        }
+        else
+        {
+            // Bruk kanon sin forward direction
+            direction = firePoint.forward;
+        }
+        
+        // Add random spread
         if (randomSpread > 0)
         {
             direction = Quaternion.Euler(
@@ -121,7 +157,7 @@ public class PillowCannon : MonoBehaviour
             audioSource.PlayOneShot(fireSound);
         }
         
-        Debug.Log($"PillowCannon fired! Direction: {direction}, Force: {shootForce}");
+        Debug.Log($"PillowCannon fired at player! Distance: {Vector3.Distance(firePoint.position, target != null ? target.position : firePoint.position):F2}m, Force: {shootForce}");
     }
     
     // Debug visualization

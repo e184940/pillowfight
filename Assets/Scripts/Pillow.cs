@@ -7,7 +7,7 @@ using UnityEngine;
 public class Pillow : MonoBehaviour
 {
     [Header("Pillow Settings")]
-    public float lifetime = 5f; // Hvor lenge puten eksisterer før den forsvinner
+    public float lifetime = 10f; // Hvor lenge puten eksisterer før den forsvinner (økt fra 5)
     public float pushForce = 10f; // Hvor hardt puten dytter spilleren
     public bool destroyOnHit = true; // Ødelegges ved treff
     
