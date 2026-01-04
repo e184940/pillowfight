@@ -488,8 +488,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
   gameOverPanel: {fileID: 908224187}
-  gameOverText: {fileID: 0}
-  scoreText: {fileID: 0}
+  gameOverText: {fileID: 693051675}
+  scoreText: {fileID: 1544815048}
   restartButton: {fileID: 57009166}
   quitButton: {fileID: 1929434569}
   pauseGameOnDeath: 1
@@ -2354,6 +2354,38 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 5691092124789641338, guid: 73350a129cefb4d5c91aa1d2f1edf5df, type: 3}
   m_PrefabInstance: {fileID: 5972167134922179466}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1266096701
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1266096702}
+  m_Layer: 0
+  m_Name: CanonSpawnpoints
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1266096702
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1266096701}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.27071, y: 14.05131, z: 38.60952}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1654220967}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1341513397
 GameObject:
   m_ObjectHideFlags: 0
@@ -2828,6 +2860,37 @@ Transform:
   - {fileID: 1360637793}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 83.785, y: 0, z: 0}
+--- !u!1 &1654220966
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1654220967}
+  m_Layer: 0
+  m_Name: Spawnpoint1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1654220967
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1654220966}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1266096702}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1716767038
 GameObject:
   m_ObjectHideFlags: 0
@@ -3591,6 +3654,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8490048242960316071, guid: 73350a129cefb4d5c91aa1d2f1edf5df, type: 3}
+      propertyPath: damage
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490048242960316071, guid: 73350a129cefb4d5c91aa1d2f1edf5df, type: 3}
       propertyPath: lifetime
       value: 200
       objectReference: {fileID: 0}
@@ -3628,3 +3695,4 @@ SceneRoots:
   - {fileID: 5972167134922179466}
   - {fileID: 140704230}
   - {fileID: 392504441}
+  - {fileID: 1266096702}
