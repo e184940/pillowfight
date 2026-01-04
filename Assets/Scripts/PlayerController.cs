@@ -12,9 +12,11 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public bool isGrounded = true; // Public so AnimationController can read it
     public LayerMask groundLayer;
     
-    // Step up for better platforming
-    public float maxStepHeight = 0.4f; // Maximum height the player can step up
-    public float stepCheckDistance = 0.1f; // How far forward to check for steps
+    // Ledge climb system
+    public float ledgeClimbHeight = 1.5f; // Max høyde spilleren kan klatre opp
+    public float ledgeClimbSpeed = 2f; // Hvor raskt spilleren klatrer opp
+    public float ledgeDetectionDistance = 0.6f; // Hvor langt fremover vi sjekker for ledge
+    private bool isClimbing = false;
     
     // Camera
     public float mouseSensitivity = 3f;
@@ -174,9 +176,21 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        MovePlayer();
-        ApplyJumpPhysics();
-        // StepUpCheck(); // Temporarily disabled - may cause collision issues
+        // Sjekk for ledge climb først
+        if (!isClimbing)
+        {
+            CheckLedgeClimb();
+        }
+        
+        // Normal movement hvis ikke klatrer
+        if (!isClimbing)
+        {
+            MovePlayer();
+            ApplyJumpPhysics();
+        }
+        
+        // VIKTIG: Nullstill angular velocity hver frame for å forhindre random rotasjon
+        rb.angularVelocity = Vector3.zero;
     }
 
     void MovePlayer()
@@ -251,54 +265,89 @@ public class PlayerController : MonoBehaviour
         cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
     }
     
-    void StepUpCheck()
+    void CheckLedgeClimb()
     {
-        // Only check if player is grounded and moving
-        if (!isGrounded || rb.linearVelocity.magnitude < 0.5f)
+        // Kun sjekk hvis spilleren er i luften og beveger seg fremover
+        if (isGrounded || rb.linearVelocity.y > 0)
             return;
         
-        // Get horizontal movement direction
-        Vector3 movementDirection = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z).normalized;
-        
-        if (movementDirection.magnitude < 0.1f)
+        // Sjekk om spilleren prøver å bevege seg fremover
+        float vertical = Input.GetAxisRaw("Vertical");
+        if (vertical <= 0)
             return;
         
         CapsuleCollider capsule = GetComponent<CapsuleCollider>();
-        // Use correct calculation that accounts for capsule center offset
-        float capsuleBottom = transform.position.y + capsule.center.y - (capsule.height / 2f);
         
-        // Check for obstacle at foot level
-        Vector3 footCheckPos = new Vector3(transform.position.x, capsuleBottom + 0.1f, transform.position.z);
-        RaycastHit hit;
+        // Sjekk i brysthøyde (midt på spilleren)
+        Vector3 chestPos = transform.position + Vector3.up * (capsule.height * 0.6f);
+        RaycastHit wallHit;
         
-        // Raycast forward from feet
-        if (Physics.Raycast(footCheckPos, movementDirection, out hit, 0.5f, groundLayer))
+        // Er det en vegg/kant foran oss?
+        if (Physics.Raycast(chestPos, transform.forward, out wallHit, ledgeDetectionDistance, groundLayer))
         {
-            // Check if it's a vertical surface (wall)
-            if (Mathf.Abs(Vector3.Dot(hit.normal, Vector3.up)) < 0.1f)
+            Debug.DrawRay(chestPos, transform.forward * ledgeDetectionDistance, Color.red);
+            
+            // Sjekk om det er gulv over denne veggen (ledge)
+            Vector3 aboveWallPos = wallHit.point + Vector3.up * ledgeClimbHeight;
+            RaycastHit ledgeHit;
+            
+            // Raycast nedover for å finne toppen av platformet
+            if (Physics.Raycast(aboveWallPos, Vector3.down, out ledgeHit, ledgeClimbHeight, groundLayer))
             {
-                // Check if there's a walkable surface above
-                Vector3 stepCheckPos = footCheckPos + movementDirection * 0.3f + Vector3.up * maxStepHeight;
-                RaycastHit stepHit;
+                Debug.DrawRay(aboveWallPos, Vector3.down * ledgeClimbHeight, Color.green);
                 
-                if (Physics.Raycast(stepCheckPos, Vector3.down, out stepHit, maxStepHeight, groundLayer))
+                // Sjekk om ledge er over spillerens hode men innenfor climb-rekkevidde
+                float ledgeHeight = ledgeHit.point.y - transform.position.y;
+                
+                if (ledgeHeight > capsule.height * 0.5f && ledgeHeight <= ledgeClimbHeight)
                 {
-                    // Check if the top surface is horizontal (walkable)
-                    if (Vector3.Dot(stepHit.normal, Vector3.up) > 0.8f)
+                    // Sjekk om toppen er flat (walkable)
+                    if (Vector3.Dot(ledgeHit.normal, Vector3.up) > 0.8f)
                     {
-                        float stepHeight = stepHit.point.y - capsuleBottom;
-                        
-                        // Only step up small ledges
-                        if (stepHeight > 0.05f && stepHeight <= maxStepHeight)
-                        {
-                            // Move player up - position at new ground level
-                            Vector3 newPosition = rb.position;
-                            newPosition.y = stepHit.point.y;
-                            rb.MovePosition(newPosition);
-                        }
+                        Debug.Log($"Ledge detected! Height: {ledgeHeight:F2}m");
+                        StartCoroutine(PerformLedgeClimb(ledgeHit.point));
                     }
                 }
             }
         }
+    }
+    
+    System.Collections.IEnumerator PerformLedgeClimb(Vector3 ledgeTop)
+    {
+        isClimbing = true;
+        
+        // Disable physics temporarily
+        rb.useGravity = false;
+        rb.linearVelocity = Vector3.zero;
+        
+        Vector3 startPos = transform.position;
+        Vector3 targetPos = new Vector3(ledgeTop.x, ledgeTop.y, ledgeTop.z) + transform.forward * 0.3f;
+        
+        float climbTime = 0f;
+        float climbDuration = 0.5f; // 0.5 sekunder å klatre opp
+        
+        Debug.Log($"Climbing from {startPos.y:F2} to {targetPos.y:F2}");
+        
+        // Smooth climb animation
+        while (climbTime < climbDuration)
+        {
+            climbTime += Time.deltaTime;
+            float t = climbTime / climbDuration;
+            
+            // Ease out curve for natural movement
+            t = 1f - Mathf.Pow(1f - t, 3f);
+            
+            transform.position = Vector3.Lerp(startPos, targetPos, t);
+            yield return null;
+        }
+        
+        // Ensure final position
+        transform.position = targetPos;
+        
+        // Re-enable physics
+        rb.useGravity = true;
+        isClimbing = false;
+        
+        Debug.Log("Climb complete!");
     }
 }

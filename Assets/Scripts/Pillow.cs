@@ -56,7 +56,12 @@ public class Pillow : MonoBehaviour
             {
                 Vector3 pushDirection = (collision.transform.position - transform.position).normalized;
                 pushDirection.y = 0.5f; // Litt opp også
-                playerRb.AddForce(pushDirection * pushForce, ForceMode.Impulse);
+                
+                // Bruk AddForce på senteret for å unngå rotasjon
+                playerRb.AddForce(pushDirection * pushForce, ForceMode.VelocityChange);
+                
+                // VIKTIG: Nullstill angular velocity for å forhindre rotasjon
+                playerRb.angularVelocity = Vector3.zero;
             }
             
             // Spawn hit effect

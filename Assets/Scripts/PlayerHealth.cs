@@ -19,8 +19,11 @@ public class PlayerHealth : MonoBehaviour
     [Header("Visual Feedback")]
     public Renderer playerRenderer; // For blink effect (auto-finnes hvis ikke satt)
     public float blinkInterval = 0.1f; // Hvor raskt spilleren blinker ved invincibility
+    public Color normalColor = Color.white; // Normal farge
+    public Color invincibilityColor = new Color(1f, 0f, 0f); // Rosa farge
     private float blinkTimer = 0f;
-    private bool isVisible = true;
+    private bool isBlinking = false;
+    private Material playerMaterial;
     
     // Events
     public event Action<int, int> OnHealthChanged; // currentHealth, maxHealth
@@ -45,11 +48,21 @@ public class PlayerHealth : MonoBehaviour
             if (playerRenderer != null)
             {
                 Debug.Log($"PlayerHealth: Auto-found renderer on {playerRenderer.gameObject.name}");
+                
+                // Lagre material for fargeendring
+                playerMaterial = playerRenderer.material;
+                normalColor = playerMaterial.color;
             }
             else
             {
                 Debug.LogWarning("PlayerHealth: No renderer found - blink effect disabled");
             }
+        }
+        else
+        {
+            // Renderer var assigned - lagre material
+            playerMaterial = playerRenderer.material;
+            normalColor = playerMaterial.color;
         }
         
         Debug.Log($"PlayerHealth initialized: {currentHealth}/{maxHealth} HP");
@@ -65,17 +78,22 @@ public class PlayerHealth : MonoBehaviour
             if (invincibilityTimer <= 0)
             {
                 isInvincible = false;
-                SetVisible(true); // Sørg for at spilleren er synlig
+                isBlinking = false;
+                SetNormalColor(); // Reset til normal farge
             }
             else
             {
-                // Blink effect
+                // Blink effect - bytt mellom normal og rosa farge
                 blinkTimer += Time.deltaTime;
                 if (blinkTimer >= blinkInterval)
                 {
                     blinkTimer = 0;
-                    isVisible = !isVisible;
-                    SetVisible(isVisible);
+                    isBlinking = !isBlinking;
+                    
+                    if (isBlinking)
+                        SetInvincibilityColor();
+                    else
+                        SetNormalColor();
                 }
             }
         }
@@ -149,13 +167,24 @@ public class PlayerHealth : MonoBehaviour
     }
     
     /// <summary>
-    /// Sett synlighet for blink effect
+    /// Sett normal farge
     /// </summary>
-    void SetVisible(bool visible)
+    void SetNormalColor()
     {
-        if (playerRenderer != null)
+        if (playerMaterial != null)
         {
-            playerRenderer.enabled = visible;
+            playerMaterial.color = normalColor;
+        }
+    }
+    
+    /// <summary>
+    /// Sett invincibility farge (rosa)
+    /// </summary>
+    void SetInvincibilityColor()
+    {
+        if (playerMaterial != null)
+        {
+            playerMaterial.color = invincibilityColor;
         }
     }
     
@@ -167,7 +196,8 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = maxHealth;
         isInvincible = false;
         invincibilityTimer = 0;
-        SetVisible(true);
+        isBlinking = false;
+        SetNormalColor(); // Reset til normal farge
         
         // Enable player controls
         PlayerController controller = GetComponent<PlayerController>();
