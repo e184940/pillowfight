@@ -37,7 +37,6 @@ public class PillowCannon : MonoBehaviour
             if (player != null)
             {
                 target = player.transform;
-                Debug.Log($"PillowCannon: Found player target");
             }
         }
         
@@ -156,8 +155,6 @@ public class PillowCannon : MonoBehaviour
         {
             audioSource.PlayOneShot(fireSound);
         }
-        
-        Debug.Log($"PillowCannon fired at player! Distance: {Vector3.Distance(firePoint.position, target != null ? target.position : firePoint.position):F2}m, Force: {shootForce}");
     }
     
     // Debug visualization

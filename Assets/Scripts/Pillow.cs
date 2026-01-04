@@ -48,7 +48,6 @@ public class Pillow : MonoBehaviour
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(damage);
-                Debug.Log($"Pillow hit player! Dealt {damage} damage.");
             }
             
             // Dytt spilleren

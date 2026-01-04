@@ -17,7 +17,7 @@ public class PlayerHealth : MonoBehaviour
     private bool isInvincible = false;
     
     [Header("Visual Feedback")]
-    public Renderer playerRenderer; // For blink effect
+    public Renderer playerRenderer; // For blink effect (auto-finnes hvis ikke satt)
     public float blinkInterval = 0.1f; // Hvor raskt spilleren blinker ved invincibility
     private float blinkTimer = 0f;
     private bool isVisible = true;
@@ -33,7 +33,23 @@ public class PlayerHealth : MonoBehaviour
         // Auto-finn renderer hvis ikke satt
         if (playerRenderer == null)
         {
+            // Søk i children (Character model)
             playerRenderer = GetComponentInChildren<Renderer>();
+            
+            if (playerRenderer == null)
+            {
+                // Søk på denne GameObjectet selv
+                playerRenderer = GetComponent<Renderer>();
+            }
+            
+            if (playerRenderer != null)
+            {
+                Debug.Log($"PlayerHealth: Auto-found renderer on {playerRenderer.gameObject.name}");
+            }
+            else
+            {
+                Debug.LogWarning("PlayerHealth: No renderer found - blink effect disabled");
+            }
         }
         
         Debug.Log($"PlayerHealth initialized: {currentHealth}/{maxHealth} HP");
@@ -72,14 +88,14 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isInvincible)
         {
-            Debug.Log("Player is invincible - damage ignored");
+            // Debug.Log("Player is invincible - damage ignored");
             return;
         }
         
         currentHealth -= damage;
         currentHealth = Mathf.Max(currentHealth, 0); // Ikke gå under 0
         
-        Debug.Log($"Player took {damage} damage! Health: {currentHealth}/{maxHealth}");
+        // Debug.Log($"Player took {damage} damage! Health: {currentHealth}/{maxHealth}");
         
         // Trigger event for UI update
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
