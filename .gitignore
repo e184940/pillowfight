@@ -11,6 +11,7 @@ UnityGenerated/
 *.user
 *.unityproj
 *.booproj
+*.md
 
 # OS generated files
 .DS_Store
