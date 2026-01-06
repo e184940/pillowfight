@@ -161,11 +161,11 @@ MonoBehaviour:
   pillowPrefab: {fileID: 5691092124789641338, guid: 73350a129cefb4d5c91aa1d2f1edf5df, type: 3}
   firePoint: {fileID: 2895836029683487659}
   shootForce: 100
-  fireRate: 1
+  fireRate: 0.5
   autoFire: 1
   aimAtPlayer: 1
   target: {fileID: 0}
-  randomSpread: 10
+  randomSpread: 4
   aimSpeed: 5
   maxPitchAngle: 45
   muzzleFlash: {fileID: 0}

@@ -66,6 +66,9 @@ public class PlayerHealth : MonoBehaviour
         }
         
         Debug.Log($"PlayerHealth initialized: {currentHealth}/{maxHealth} HP");
+        
+        // Trigger initial health update for UI
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
     
     void Update()

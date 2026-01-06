@@ -19,7 +19,7 @@ public class HealthUI : MonoBehaviour
     public Color lowHealthColor = Color.red;
     public float lowHealthThreshold = 0.3f; // 30% health = red
     
-    void Start()
+    void Awake()
     {
         // Auto-find PlayerHealth hvis ikke satt
         if (playerHealth == null)
@@ -53,9 +53,15 @@ public class HealthUI : MonoBehaviour
         playerHealth.OnDeath += OnPlayerDeath;
         
         Debug.Log("HealthUI: Subscribed to PlayerHealth events");
-        
-        // Initial update
-        UpdateHealthUI(playerHealth.currentHealth, playerHealth.maxHealth);
+    }
+    
+    void Start()
+    {
+        // Initial update (wait for PlayerHealth.Start() to set currentHealth)
+        if (playerHealth != null)
+        {
+            UpdateHealthUI(playerHealth.currentHealth, playerHealth.maxHealth);
+        }
     }
     
     void OnDestroy()

@@ -154,6 +154,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Pillow
   lifetime: 5
   pushForce: 10
-  damage: 1
+  damage: 10
   destroyOnHit: 1
   hitEffect: {fileID: 0}
