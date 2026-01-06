@@ -449,8 +449,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "Controls:\nW (arrow up) - walk forward\nA/D - strafe/walk left/right \nS
-    (arrow down) - walk backwards\nspace - jump\n\nArrow left/right - rotate left/right\nw
-    in combination with a/d - walk forward and rotate left/right\n\nP - throw pillow"
+    (arrow down) - walk backwards\n\nArrow left/right - rotate left/right\nspace
+    - jump\n\nP - throw pillow"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f8119871944e045438c20f8d84e400d7, type: 2}
   m_sharedMaterial: {fileID: 4958189762915754411, guid: f8119871944e045438c20f8d84e400d7, type: 2}

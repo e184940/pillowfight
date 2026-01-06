@@ -20,9 +20,16 @@ public class PlayerController : MonoBehaviour
     
     // Camera
     public float mouseSensitivity = 3f;
-    public float keyboardRotationSpeed = 90f; // Grader per sekund
+    public float keyboardRotationSpeed = 90f;
     private float verticalRotation;
     private Transform cameraTransform;
+    
+    // Shooting
+    public GameObject pillowPrefab;
+    public Transform shootPoint;
+    public float shootForce = 20f;
+    public float shootCooldown = 0.5f;
+    private float lastShootTime;
     
     // For movement
     private Vector3 currentVelocity;
@@ -70,6 +77,15 @@ public class PlayerController : MonoBehaviour
         
         cameraTransform = Camera.main.transform;
         Cursor.lockState = CursorLockMode.Locked;
+        
+        // Setup shoot point hvis ikke assigned
+        if (shootPoint == null)
+        {
+            GameObject sp = new GameObject("ShootPoint");
+            sp.transform.SetParent(transform);
+            sp.transform.localPosition = new Vector3(0, 1.5f, 1.5f);
+            shootPoint = sp.transform;
+        }
         
         Debug.Log("Player setup complete - Rigidbody and Collider configured");
     }
@@ -141,6 +157,12 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             Jump();
+        }
+        
+        // Shooting
+        if (Input.GetKeyDown(KeyCode.P) && Time.time >= lastShootTime + shootCooldown)
+        {
+            ShootPillow();
         }
     }
     
@@ -238,6 +260,39 @@ public class PlayerController : MonoBehaviour
         }
         
         rb.linearVelocity = velocity;
+    }
+    
+    void ShootPillow()
+    {
+        if (pillowPrefab == null)
+        {
+            Debug.LogError("PlayerController: No pillow prefab assigned!");
+            return;
+        }
+        
+        GameObject pillow = Instantiate(pillowPrefab, shootPoint.position, shootPoint.rotation);
+        
+        Vector3 shootDirection = transform.forward;
+        
+        Rigidbody pillowRb = pillow.GetComponent<Rigidbody>();
+        if (pillowRb == null)
+        {
+            pillowRb = pillow.AddComponent<Rigidbody>();
+        }
+        
+        // Ignorer kollisjon mellom spiller og denne puten
+        Collider pillowCollider = pillow.GetComponent<Collider>();
+        Collider playerCollider = GetComponent<Collider>();
+        if (pillowCollider != null && playerCollider != null)
+        {
+            Physics.IgnoreCollision(pillowCollider, playerCollider);
+        }
+        
+        pillowRb.linearVelocity = shootDirection * shootForce;
+        
+        lastShootTime = Time.time;
+        
+        Destroy(pillow, 5f);
     }
 
     void RotateCamera()
