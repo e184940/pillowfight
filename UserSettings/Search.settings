@@ -9,9 +9,13 @@ onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
-	"last_search.66F56946" = "inspe"
+	"last_search.66F56946" = "clear flags"
 	"OpenInspectorPreview.66F56946" = "0"
 	"currentGroup.66F56946" = "all"
+	"picker_window_position_offset.00000000" = "4;158;320;550"
+	"picker_visibility_flags.00000000" = "0"
+	"picker_item_size.00000000" = "1"
+	"picker_inspector.00000000" = "0"
 }
 providers = {
 	asset = {
@@ -68,6 +72,7 @@ providers = {
 objectSelectors = {
 }
 recentSearches = [
+	"clear f"
 ]
 searchItemFavorites = [
 ]

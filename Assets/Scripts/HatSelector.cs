@@ -9,10 +9,10 @@ public class HatSelector : MonoBehaviour
     private Button[] hatButtons;
 
     [SerializeField] private Button startButton;
-    [SerializeField] private RawImage previewImage; // Viser 3D preview
+    [SerializeField] private RawImage previewImage;
 
     [Header("Hat Settings")] [SerializeField]
-    private GameObject[] hatPrefabs; // Samme som HatManager
+    private GameObject[] hatPrefabs;
 
     [SerializeField] private string gameSceneName = "GameScene";
 
@@ -36,13 +36,12 @@ public class HatSelector : MonoBehaviour
 
     private void Update()
     {
-        // Roter preview-hatten
-        if (currentPreviewHat != null) currentPreviewHat.transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
+        if (currentPreviewHat != null) 
+            currentPreviewHat.transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
     }
 
     private void OnDestroy()
     {
-        // Cleanup preview
         if (currentPreviewHat != null)
             Destroy(currentPreviewHat);
     }
@@ -51,10 +50,34 @@ public class HatSelector : MonoBehaviour
     {
         if (previewCamera != null && previewImage != null)
         {
-            // Lag RenderTexture for preview
-            var renderTexture = new RenderTexture(512, 512, 16);
+            previewCamera.clearFlags = CameraClearFlags.SolidColor;
+            previewCamera.depth = -100;
+            previewCamera.enabled = true;
+            
+            Light[] lights = previewCamera.GetComponentsInChildren<Light>();
+            if (lights.Length == 0)
+            {
+                GameObject lightObj = new GameObject("PreviewLight");
+                lightObj.transform.SetParent(previewCamera.transform);
+                lightObj.transform.localPosition = new Vector3(2, 3, 0);
+                lightObj.transform.localRotation = Quaternion.Euler(50, -30, 0);
+                
+                Light previewLight = lightObj.AddComponent<Light>();
+                previewLight.type = LightType.Directional;
+                previewLight.intensity = 1.5f;
+            }
+            
+            var renderTexture = new RenderTexture(512, 512, 24);
+            renderTexture.Create();
             previewCamera.targetTexture = renderTexture;
             previewImage.texture = renderTexture;
+        }
+        else
+        {
+            if (previewCamera == null)
+                Debug.LogError("Preview Camera NOT assigned!");
+            if (previewImage == null)
+                Debug.LogError("Preview Image NOT assigned!");
         }
     }
 
@@ -77,26 +100,23 @@ public class HatSelector : MonoBehaviour
         selectedHatIndex = hatIndex;
         UpdateButtonVisuals();
         UpdatePreview(hatIndex);
-
-        Debug.Log($"Selected hat: {hatIndex}");
     }
 
     private void UpdatePreview(int hatIndex)
     {
-        // Fjern gammel preview
         if (currentPreviewHat != null)
             Destroy(currentPreviewHat);
 
-        // Valider index
         if (hatIndex < 0 || hatIndex >= hatPrefabs.Length || hatPrefabs[hatIndex] == null)
+        {
+            Debug.LogWarning($"HatSelector: Invalid hat prefab at index {hatIndex}");
             return;
+        }
 
-        // Spawn ny preview
         currentPreviewHat = Instantiate(hatPrefabs[hatIndex], previewSpawnPoint);
         currentPreviewHat.transform.localPosition = Vector3.zero;
         currentPreviewHat.transform.localRotation = Quaternion.identity;
 
-        // Fjern physics/colliders fra preview
         var colliders = currentPreviewHat.GetComponentsInChildren<Collider>();
         foreach (var col in colliders)
             col.enabled = false;
@@ -116,10 +136,12 @@ public class HatSelector : MonoBehaviour
 
     private void StartGame()
     {
+        var gameManager = GameManager.FindOrCreate();
+        gameManager.SelectedHatIndex = selectedHatIndex;
+        
         PlayerPrefs.SetInt("SelectedHat", selectedHatIndex);
         PlayerPrefs.Save();
 
-        Debug.Log($"Starting game with hat: {selectedHatIndex}");
         SceneManager.LoadScene(gameSceneName);
     }
 }

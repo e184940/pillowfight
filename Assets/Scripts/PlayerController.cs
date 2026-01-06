@@ -146,31 +146,18 @@ public class PlayerController : MonoBehaviour
     
     void HandleRotation()
     {
-        // Få raw input fra både tastatur og piler
-        float vertical = Input.GetAxisRaw("Vertical");
-        
-        // Sjekk om pil venstre/høyre er trykt (KeyCode for raw arrow input)
+        // Sjekk om pil venstre/høyre er trykt
         float arrowHorizontal = 0f;
         if (Input.GetKey(KeyCode.LeftArrow))
             arrowHorizontal = -1f;
         else if (Input.GetKey(KeyCode.RightArrow))
             arrowHorizontal = 1f;
         
-        // Piler roterer ALLTID
+        // KUN piler roterer spilleren
         if (Mathf.Abs(arrowHorizontal) > 0.1f)
         {
             float rotationAmount = arrowHorizontal * keyboardRotationSpeed * Time.deltaTime;
             transform.Rotate(0, rotationAmount, 0);
-        }
-        // A/D roterer KUN når W/S også er trykt
-        else
-        {
-            float horizontal = Input.GetAxisRaw("Horizontal");
-            if (Mathf.Abs(vertical) > 0.1f && Mathf.Abs(horizontal) > 0.1f)
-            {
-                float rotationAmount = horizontal * keyboardRotationSpeed * Time.deltaTime;
-                transform.Rotate(0, rotationAmount, 0);
-            }
         }
     }
 

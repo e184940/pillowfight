@@ -1,29 +1,26 @@
 using UnityEngine;
 
-/// <summary>
-/// Pillow Cannon - skyter puter mot spilleren
-/// </summary>
 public class PillowCannon : MonoBehaviour
 {
     [Header("References")]
-    public GameObject pillowPrefab; // Pute-prefab som skytes
-    public Transform firePoint; // Hvor puten spawner (ende av kanon)
+    public GameObject pillowPrefab;
+    public Transform firePoint;
     
     [Header("Shooting Settings")]
-    public float shootForce = 25f; // Hvor fort puten skytes (økt fra 15)
-    public float fireRate = 0.8f; // Skudd per sekund (redusert fra 2)
-    public bool autoFire = true; // Skyt automatisk
+    public float shootForce = 25f;
+    public float fireRate = 0.8f;
+    public bool autoFire = true;
     
     [Header("Targeting")]
-    public bool aimAtPlayer = true; // Sikt mot spilleren
-    public Transform target; // Målpunkt (player)
-    public float randomSpread = 2f; // Tilfeldighet i sikting (grader)
-    public float aimSpeed = 5f; // Hvor raskt kanonen roterer mot spilleren
-    public float maxPitchAngle = 45f; // Maksimal opp/ned vinkel (grader)
+    public bool aimAtPlayer = true;
+    public Transform target;
+    public float randomSpread = 2f;
+    public float aimSpeed = 5f;
+    public float maxPitchAngle = 45f;
     
     [Header("Visual")]
-    public GameObject muzzleFlash; // Effekt når kanon skyter (optional)
-    public AudioClip fireSound; // Lyd når kanon skyter (optional)
+    public GameObject muzzleFlash;
+    public AudioClip fireSound;
     
     private float nextFireTime;
     private AudioSource audioSource;
