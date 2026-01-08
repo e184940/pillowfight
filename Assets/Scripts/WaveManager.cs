@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WaveManager : MonoBehaviour
@@ -12,7 +13,7 @@ public class WaveManager : MonoBehaviour
     [Header("Wave settings")] 
     [SerializeField] private int startingCannons = 1;
     [SerializeField] private int cannonsPerWave = 1;
-    // private float timeBetweenWaves = 15f;
+    [SerializeField] private float timeBetweenWaves = 30f;
 
     [Header("NPC settings")]
     public GameObject npcPrefab;
@@ -25,6 +26,8 @@ public class WaveManager : MonoBehaviour
     public float maxHeight = 5f; 
     
     private int currentWave = 0;
+    private List<GameObject> activeCannons = new List<GameObject>();
+    private List<GameObject> activeNPCs = new List<GameObject>();
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -59,7 +62,7 @@ public class WaveManager : MonoBehaviour
         
         while (true)
         {
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(timeBetweenWaves);
             StartNewWave();
         }
     }
@@ -68,14 +71,15 @@ public class WaveManager : MonoBehaviour
     {
         currentWave++;
 
+        // ØDELEGG ALLE GAMLE KANONER OG NPCs
+        DestroyOldEnemies();
+
         int cannonsToSpawn = startingCannons + (cannonsPerWave * (currentWave - 1));
 
-        Debug.Log($"WaveManager: Starting new wave {currentWave} with {cannonsToSpawn} cannons");
+        Debug.Log($"WaveManager: Starting wave {currentWave} with {cannonsToSpawn} cannons");
 
-        // Spawn rundt hver spawn point
         for (int i = 0; i < cannonsToSpawn; i++)
         {
-            // Velg tilfeldig spawn point (returnerer Vector3)
             Vector3 randomSpawnPoint = spawnPoints.GetRandomSpawnPoint();
             SpawnCannon(randomSpawnPoint);
         }
@@ -83,13 +87,47 @@ public class WaveManager : MonoBehaviour
         if (currentWave >= npcSpawnWave)
         {
             int npcsToSpawn = (currentWave - npcSpawnWave + 1) * npcsPerWave;
+            Debug.Log($"WaveManager: Wave {currentWave} >= {npcSpawnWave} - spawning {npcsToSpawn} NPCs");
+            
+            if (npcPrefab == null)
+            {
+                Debug.LogError("WaveManager: NPC Prefab is NULL! Assign it in Inspector!");
+            }
+            
             for (int i = 0; i < npcsToSpawn; i++)
             {
                 SpawnNPC();
             }
         }
+        else
+        {
+            Debug.Log($"WaveManager: Wave {currentWave} < {npcSpawnWave} - no NPCs spawning yet");
+        }
 
-        Debug.Log($"WaveManager: Wave {currentWave} done. Spawned {cannonsToSpawn} cannons");
+        Debug.Log($"WaveManager: Wave {currentWave} complete - {activeCannons.Count} cannons, {activeNPCs.Count} NPCs");
+    }
+    
+    private void DestroyOldEnemies()
+    {
+        // Fjern alle gamle kanoner
+        foreach (GameObject cannon in activeCannons)
+        {
+            if (cannon != null)
+            {
+                Destroy(cannon);
+            }
+        }
+        activeCannons.Clear();
+        
+        // Fjern alle gamle NPCs
+        foreach (GameObject npc in activeNPCs)
+        {
+            if (npc != null)
+            {
+                Destroy(npc);
+            }
+        }
+        activeNPCs.Clear();
     }
 
    private void SpawnCannon(Vector3 spawnPointPos)
@@ -97,19 +135,20 @@ public class WaveManager : MonoBehaviour
        if (cannonPrefab == null)
            return;
 
-       // Spawn PÅ OMKRETSEN (alltid på kanten av sirkelen)
        float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
        float x = Mathf.Cos(angle) * spawnRadius;
        float z = Mathf.Sin(angle) * spawnRadius;
 
        Vector3 spawnPos = spawnPointPos + new Vector3(x, 0, z);
 
-       // Random høyde OVER omkretsen
        float randomHeight = Random.Range(minHeight, maxHeight);
        spawnPos.y = spawnPointPos.y + randomHeight;
 
-       // Spawn kanon
        GameObject cannon = Instantiate(cannonPrefab, spawnPos, Quaternion.identity, cannonParent);
+       activeCannons.Add(cannon);
+
+       // Diagnostics: check visibility issues
+       LogSpawnDiagnostics(cannon, "Cannon");
 
        Debug.Log($"WaveManager: Spawned cannon at {spawnPos} (height: {randomHeight:F1})");
    }
@@ -133,8 +172,67 @@ public class WaveManager : MonoBehaviour
        spawnPos.y = randomSpawnPoint.y + randomHeight;
 
        GameObject npc = Instantiate(npcPrefab, spawnPos, Quaternion.identity, cannonParent);
+       activeNPCs.Add(npc);
        
        Debug.Log($"WaveManager: Spawned NPC at {spawnPos}");
+
+       // Diagnostics: provide details to help find invisible NPCs
+       LogSpawnDiagnostics(npc, "NPC");
    }
    
+   // New helper - logs renderer/bounds/scale info and attempts a safe fix for zero-scale parents
+   private void LogSpawnDiagnostics(GameObject go, string tag)
+   {
+       if (go == null)
+       {
+           Debug.LogWarning($"WaveManager: {tag} instance is null after Instantiate");
+           return;
+       }
+
+       Debug.Log($"WaveManager Diagnostics: {tag} active={go.activeSelf}, position={go.transform.position}, localScale={go.transform.localScale}, lossyScale={go.transform.lossyScale}");
+
+       // If parent has zero scale anywhere, try to correct (common mistake when assigning UI object as parent)
+       if (Mathf.Approximately(go.transform.lossyScale.x, 0f) || Mathf.Approximately(go.transform.lossyScale.y, 0f) || Mathf.Approximately(go.transform.lossyScale.z, 0f))
+       {
+           Debug.LogWarning($"WaveManager Diagnostics: Detected zero scale on spawned {tag} (lossyScale={go.transform.lossyScale}). Setting localScale=Vector3.one to force visibility. NOTE: fix prefab/parent scale in Editor.");
+           go.transform.localScale = Vector3.one;
+       }
+
+       // Log renderer info
+       Renderer[] rends = go.GetComponentsInChildren<Renderer>(true);
+       if (rends == null || rends.Length == 0)
+       {
+           Debug.LogWarning($"WaveManager Diagnostics: No Renderer found on spawned {tag}. It may be invisible or use SkinnedMeshRenderer inside nested prefab.");
+       }
+       else
+       {
+           Debug.Log($"WaveManager Diagnostics: Found {rends.Length} renderers on {tag}.");
+           foreach (var r in rends)
+           {
+               Debug.Log($" - Renderer: {r.gameObject.name}, enabled={r.enabled}, bounds.center={r.bounds.center}, bounds.extents={r.bounds.extents}, worldPos={r.transform.position}");
+           }
+
+           // If found renderers but they're far from spawn position, notify
+           Vector3 avgCenter = Vector3.zero;
+           foreach (var r in rends) avgCenter += r.bounds.center;
+           avgCenter /= rends.Length;
+
+           float verticalOffset = Mathf.Abs(avgCenter.y - go.transform.position.y);
+           if (verticalOffset > 5f)
+           {
+               Debug.LogWarning($"WaveManager Diagnostics: Visual center for {tag} is {verticalOffset:F2} units away from spawn position. Open prefab and fix pivot/mesh offsets. avgCenter={avgCenter}");
+           }
+       }
+
+       // Also log parent chain scales
+       Transform t = go.transform;
+       string chain = "";
+       while (t != null)
+       {
+           chain += $"/{t.name}(localScale={t.localScale},lossy={t.lossyScale})";
+           t = t.parent;
+       }
+       Debug.Log($"WaveManager Diagnostics: Transform chain: {chain}");
+   }
+
 }

@@ -165,7 +165,7 @@ MonoBehaviour:
   autoFire: 1
   aimAtPlayer: 1
   target: {fileID: 0}
-  randomSpread: 4
+  randomSpread: 10
   aimSpeed: 5
   maxPitchAngle: 45
   muzzleFlash: {fileID: 0}

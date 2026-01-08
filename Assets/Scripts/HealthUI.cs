@@ -21,7 +21,8 @@ public class HealthUI : MonoBehaviour
     
     void Awake()
     {
-        // Auto-find PlayerHealth hvis ikke satt
+        Debug.Log("HealthUI: Awake called - initializing...");
+        
         if (playerHealth == null)
         {
             playerHealth = FindFirstObjectByType<PlayerHealth>();
@@ -37,22 +38,31 @@ public class HealthUI : MonoBehaviour
             return;
         }
         
-        // Validate references
         if (healthSlider == null)
         {
-            Debug.LogWarning("HealthUI: Health Slider not assigned! Drag HealthBar slider to this field.");
+            Debug.LogError("HealthUI: Health Slider NOT assigned! Assign it in Inspector!");
+            return;
+        }
+        else
+        {
+            Debug.Log($"HealthUI: Health Slider found: {healthSlider.name}");
         }
         
         if (fillImage == null)
         {
-            Debug.LogWarning("HealthUI: Fill Image not assigned! Drag Fill image to this field.");
+            Debug.LogWarning("HealthUI: Fill Image not assigned - trying to find it...");
+            Transform fillTransform = healthSlider.transform.Find("Fill Area/Fill");
+            if (fillTransform != null)
+            {
+                fillImage = fillTransform.GetComponent<Image>();
+                Debug.Log("HealthUI: Auto-found Fill Image");
+            }
         }
         
-        // Subscribe to health change event
         playerHealth.OnHealthChanged += UpdateHealthUI;
         playerHealth.OnDeath += OnPlayerDeath;
         
-        Debug.Log("HealthUI: Subscribed to PlayerHealth events");
+        Debug.Log("HealthUI: Setup complete and subscribed to events");
     }
     
     void Start()

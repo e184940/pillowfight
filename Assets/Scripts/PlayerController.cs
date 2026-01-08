@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     
     // Camera
     public float mouseSensitivity = 3f;
-    public float keyboardRotationSpeed = 90f;
+    public float keyboardRotationSpeed = 180f;
     private float verticalRotation;
     private Transform cameraTransform;
     

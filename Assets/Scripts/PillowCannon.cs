@@ -73,14 +73,14 @@ public class PillowCannon : MonoBehaviour
             {
                 // For standard Cylinder (Y-akse er forward):
                 // Vi må bruke Quaternion som peker Y-aksen mot målet
-                
+
                 // Beregn pitch for å begrense
                 float horizontalDistance = new Vector3(direction.x, 0, direction.z).magnitude;
                 float pitchAngle = Mathf.Atan2(direction.y, horizontalDistance) * Mathf.Rad2Deg;
-                
+
                 // Begrens pitch
                 pitchAngle = Mathf.Clamp(pitchAngle, -maxPitchAngle, maxPitchAngle);
-                
+
                 // Rekonstruer direction med begrenset pitch
                 if (Mathf.Abs(pitchAngle) == maxPitchAngle)
                 {
@@ -88,11 +88,11 @@ public class PillowCannon : MonoBehaviour
                     Vector3 horizontalDir = new Vector3(direction.x, 0, direction.z).normalized;
                     direction = horizontalDir * Mathf.Cos(pitchRad) + Vector3.up * Mathf.Sin(pitchRad);
                 }
-                
+
                 // Bruk Quaternion.LookRotation men med Y-akse som "up"
                 // For Cylinder: Y-akse skal peke mot målet
                 Quaternion targetRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(-90, 0, 0);
-                
+
                 // Smooth rotasjon
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * aimSpeed);
             }

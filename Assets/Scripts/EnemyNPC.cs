@@ -5,6 +5,7 @@ public class EnemyNpc : MonoBehaviour
     [Header("Movement")]
     public float npcSpeed = 3f;
     public float stopDistance = 10f;
+    public float rotationSpeed = 10f;
 
     [Header("Shooting settings")]
     public GameObject pillowPrefab;
@@ -48,14 +49,16 @@ public class EnemyNpc : MonoBehaviour
         if (player == null) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        Vector3 direction = (player.position - transform.position).normalized;
+        
+        // Alltid roter mot spilleren (raskere)
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
+        // Beveg kun hvis for langt unna
         if (distanceToPlayer > stopDistance)
         {
-            Vector3 direction = (player.position - transform.position).normalized;
             transform.position += direction * npcSpeed * Time.deltaTime;
-            
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
         }
 
         if (distanceToPlayer <= shootRange && Time.time >= nextShootTime)
