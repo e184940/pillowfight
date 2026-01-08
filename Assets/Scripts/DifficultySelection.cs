@@ -12,7 +12,7 @@ public class DifficultySelection : MonoBehaviour
     public Button proceedButton;
     public TextMeshProUGUI selectedDifficultyText;
 
-    private GameManager.Difficulty? selectedDifficulty = null;
+    public GameManager.Difficulty? selectedDifficulty;
 
     void Start()
     {

@@ -40,55 +40,62 @@ public class Pillow : MonoBehaviour
     
     void OnCollisionEnter(Collision collision)
     {
-        // Sjekk om vi traff spilleren
-        if (collision.gameObject.CompareTag("Player"))
+         if (collision.gameObject.CompareTag("Player"))
         {
-            // Gjør damage på spilleren
             PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(damage);
             }
             
-            // Dytt spilleren
             Rigidbody playerRb = collision.gameObject.GetComponent<Rigidbody>();
             if (playerRb != null)
             {
                 Vector3 pushDirection = (collision.transform.position - transform.position).normalized;
-                pushDirection.y = 0.5f; // Litt opp også
+                pushDirection.y = 0.5f;
                 
-                // Bruk AddForce på senteret for å unngå rotasjon
                 playerRb.AddForce(pushDirection * pushForce, ForceMode.VelocityChange);
-                
-                // VIKTIG: Nullstill angular velocity for å forhindre rotasjon
                 playerRb.angularVelocity = Vector3.zero;
             }
             
-            // Spawn hit effect
             if (hitEffect != null)
             {
                 Instantiate(hitEffect, transform.position, Quaternion.identity);
             }
             
-            // Destroy pillow
             if (destroyOnHit)
             {
                 Destroy(gameObject);
             }
         }
-        // Traff noe annet (vegg, platform)
-        else
+        else if (collision.gameObject.CompareTag("Enemy"))
         {
-            // Spawn hit effect
+            EnemyNpc enemyNpc = collision.gameObject.GetComponent<EnemyNpc>();
+            if (enemyNpc != null)
+            {
+                enemyNpc.TakeDamage(damage);
+            }
+            
             if (hitEffect != null)
             {
                 Instantiate(hitEffect, transform.position, Quaternion.identity);
             }
             
-            // Destroy etter et lite "bounce"
             if (destroyOnHit)
             {
-                Destroy(gameObject, 0.5f); // Litt delay for bounce
+                Destroy(gameObject);
+            }
+        }
+        else
+        {
+            if (hitEffect != null)
+            {
+                Instantiate(hitEffect, transform.position, Quaternion.identity);
+            }
+            
+            if (destroyOnHit)
+            {
+                Destroy(gameObject, 0.5f);
             }
         }
     }
