@@ -9,6 +9,7 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private GameObject cannonPrefab;
     [SerializeField] private SpawnPointsUI spawnPoints;
     [SerializeField] private Transform cannonParent;
+    [SerializeField] private Transform npcParent; // separate parent for NPCs to avoid parenting under UI/Canvas
 
     [Header("Wave settings")] 
     [SerializeField] private int startingCannons = 1;
@@ -50,6 +51,14 @@ public class WaveManager : MonoBehaviour
             GameObject parent = new GameObject("Cannons");
             cannonParent = parent.transform;
             Debug.Log("WaveManager: Auto-created Cannons parent");
+        }
+
+        // Auto-create NPC parent if not assigned (place at root to avoid UI parenting issues)
+        if (npcParent == null)
+        {
+            GameObject npcParentGO = new GameObject("NPCs");
+            npcParent = npcParentGO.transform;
+            Debug.Log("WaveManager: Auto-created NPCs parent");
         }
 
         StartCoroutine(WaveLoop());
@@ -171,7 +180,15 @@ public class WaveManager : MonoBehaviour
        float randomHeight = Random.Range(minHeight, maxHeight);
        spawnPos.y = randomSpawnPoint.y + randomHeight;
 
-       GameObject npc = Instantiate(npcPrefab, spawnPos, Quaternion.identity, cannonParent);
+       // Instantiate without parent first to avoid inheriting unwanted parent scale (common problem when parent is UI)
+       GameObject npc = Instantiate(npcPrefab, spawnPos, Quaternion.identity);
+       // Ensure the instance is active and scaled properly
+       if (!npc.activeSelf) npc.SetActive(true);
+       npc.transform.localScale = Vector3.one;
+       // Parent under dedicated npcParent (world position stays so it keeps spawnPos)
+       if (npcParent != null)
+           npc.transform.SetParent(npcParent, true);
+
        activeNPCs.Add(npc);
        
        Debug.Log($"WaveManager: Spawned NPC at {spawnPos}");
