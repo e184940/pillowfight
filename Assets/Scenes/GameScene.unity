@@ -6466,6 +6466,7 @@ MonoBehaviour:
   cannonPrefab: {fileID: 8448567849524422332, guid: 98a8dfd70545f46acba511a60875d775, type: 3}
   spawnPoints: {fileID: 1266096703}
   cannonParent: {fileID: 1204527345}
+  npcParent: {fileID: 0}
   startingCannons: 1
   cannonsPerWave: 1
   timeBetweenWaves: 15
@@ -6676,8 +6677,38 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1052095345318716116, guid: b4ceac0cb2c434c8a827c3b0d3d3721c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3398537677195016176}
   m_SourcePrefab: {fileID: 100100000, guid: b4ceac0cb2c434c8a827c3b0d3d3721c, type: 3}
+--- !u!1 &3398537677195016175 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1052095345318716116, guid: b4ceac0cb2c434c8a827c3b0d3d3721c, type: 3}
+  m_PrefabInstance: {fileID: 3398537677195016174}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &3398537677195016176
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3398537677195016175}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
 --- !u!1001 &5972167134922179466
 PrefabInstance:
   m_ObjectHideFlags: 0
