@@ -10,14 +10,16 @@ public class PlatformerCamera : MonoBehaviour
     public Transform target; // Player transform
     
     [Header("Camera Position")]
-    public float distance = 8f; // Avstand fra spiller
-    public float height = 3f; // Høyde over spiller
-    public float smoothSpeed = 0.125f; // Hvor smooth kamera følger (0.01-1)
+    public float distance = 6f; // Litt avstand for oversikt
+    public float height = 4f; // Høyde for oversikt
+    public float smoothSpeed = 0.2f; // Smooth follow
     
     [Header("Rotation")]
-    public bool rotateWithPlayer = true; // Roter rundt spilleren
-    public float rotationSpeed = 5f; // Hvor raskt kamera roterer
-    public Vector3 lookOffset = new Vector3(0, 1, 0); // Hvor på spilleren (bryst-høyde)
+    public bool rotateWithPlayer = false; // SKAL IKKE ROTERE MED PLAYER (FIXED)
+    public bool lookAtPlayer = false; // Skal kamera se på spilleren? (False = Fast rotasjon)
+    public float rotationDamping = 0.5f; 
+    public float lookSmooth = 10f; 
+    public Vector3 lookOffset = new Vector3(0, 1, 0); 
     
     [Header("Collision Avoidance")]
     public bool avoidObstacles = true;
@@ -28,10 +30,14 @@ public class PlatformerCamera : MonoBehaviour
     public float zoomDeadZone = 0.5f; // Ignorer små zoom-endringer
     
     private float currentDistance;
-    private float currentHeight;
+    // Current height is managed by desiredPosition calculation directly
     private Vector3 currentVelocity;
     private float distanceVelocity;
     private float targetDistance;
+    
+    // Rotation smoothing
+    private float currentRotationAngle;
+    private float rotationVelocity;
     
     void Start()
     {
@@ -58,8 +64,30 @@ public class PlatformerCamera : MonoBehaviour
         
         // Initialiser current values
         currentDistance = distance;
-        currentHeight = height;
         targetDistance = distance;
+
+        if (target != null)
+        {
+            // Start med nåværende vinkel hvis vi ikke roterer med spiller
+            if (!rotateWithPlayer)
+            {
+                // Beregn vinkel fra kamera til spiller ved start
+                Vector3 toCam = transform.position - target.position;
+                toCam.y = 0;
+                if (toCam.sqrMagnitude > 0)
+                {
+                    currentRotationAngle = Quaternion.LookRotation(-toCam).eulerAngles.y;
+                }
+                else
+                {
+                   currentRotationAngle = 0;
+                }
+            }
+            else
+            {
+                currentRotationAngle = target.eulerAngles.y;
+            }
+        }
     }
     
     void LateUpdate()
@@ -67,18 +95,22 @@ public class PlatformerCamera : MonoBehaviour
         if (target == null)
             return;
         
-        // Beregn rotasjon basert på spillerens forward direction
-        Quaternion rotation;
+        // Beregn rotasjon
+        float wantedRotationAngle = currentRotationAngle;
+        
         if (rotateWithPlayer)
         {
-            // Roter rundt spilleren basert på hvor spilleren ser
-            rotation = Quaternion.Euler(0, target.eulerAngles.y, 0);
+            wantedRotationAngle = target.eulerAngles.y;
+            // Smooth rotation damping only when following player rotation
+            currentRotationAngle = Mathf.SmoothDampAngle(currentRotationAngle, wantedRotationAngle, ref rotationVelocity, rotationDamping);
         }
         else
         {
-            // Hold fast rotasjon
-            rotation = Quaternion.Euler(0, 0, 0);
+             // Keep calculated angle fixed or adjust manually if needed
+             // currentRotationAngle stays constant
         }
+        
+        Quaternion rotation = Quaternion.Euler(0, currentRotationAngle, 0);
         
         // Beregn ønsket posisjon (bak spilleren basert på rotasjon)
         Vector3 direction = rotation * new Vector3(0, 0, -1); // Bak spilleren
@@ -101,26 +133,31 @@ public class PlatformerCamera : MonoBehaviour
             }
         }
         
-        // Dead zone - ignorer små endringer for å unngå "breathing"
+        // Dead zone
         if (Mathf.Abs(newTargetDistance - targetDistance) > zoomDeadZone)
         {
             targetDistance = newTargetDistance;
         }
         
-        // Smooth zoom ved collision
+        // Smooth zoom
         currentDistance = Mathf.SmoothDamp(currentDistance, targetDistance, ref distanceVelocity, collisionSmoothing);
         
-        // Oppdater posisjon med smooth distance
-        direction = rotation * new Vector3(0, 0, -1);
+        // Oppdater posisjon
+        direction = rotation * new Vector3(0, 0, -1); // Recalculate direction in case angle changed
         desiredPosition = target.position + direction * currentDistance + Vector3.up * height;
         
         // Smooth follow position
         Vector3 smoothedPosition = Vector3.SmoothDamp(transform.position, desiredPosition, ref currentVelocity, smoothSpeed);
         transform.position = smoothedPosition;
         
-        // Look at target
-        Vector3 lookAtPoint = target.position + lookOffset;
-        transform.LookAt(lookAtPoint);
+        // Look at target - ONLY if enabled
+        if (lookAtPlayer)
+        {
+            Vector3 lookAtPoint = target.position + lookOffset;
+            Quaternion targetRotation = Quaternion.LookRotation(lookAtPoint - transform.position);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * lookSmooth);
+        }
+        // Else: beholder sin opprinnelige rotasjon (Fixed)
     }
     
     // Debug visualization
@@ -155,4 +192,3 @@ public class PlatformerCamera : MonoBehaviour
         }
     }
 }
-
