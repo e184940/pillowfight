@@ -114,7 +114,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        RotateCamera();
+        // RotateCamera(); // FJERNET ROTASJON AV KAMERA HER
         HandleRotation(); // Ny metode for rotasjon
         
         // Ground check - use capsule's actual bottom position
@@ -297,14 +297,26 @@ public class PlayerController : MonoBehaviour
 
     void RotateCamera()
     {
+        // VIKTIG: VI FJERNER ALL MUS- OG KAMERAROTASJON HERFRA.
+        // Kameraet styres nå 100% av PlatformerCamera.cs som henger etter spillerens bevelgelse.
+        // Spillerens rotasjon styres av HandleRotation (Piler).
+        
+        // La denne stå tom (eller fjern den er bedre, men jeg kommenterer ut innholdet for sikkerhets skyld)
+        /*
         // Mouse X rotates the entire character (yaw)
         float horizontalRotation = Input.GetAxis("Mouse X") * mouseSensitivity;
         transform.Rotate(0, horizontalRotation, 0);
 
-        // Mouse Y rotates only the camera (pitch)
+        // Mouse Y looks up/down (only moves camera target or visual, doesn't rotate player physics)
         verticalRotation -= Input.GetAxis("Mouse Y") * mouseSensitivity;
-        verticalRotation = Mathf.Clamp(verticalRotation, -90f, 90f);
-        cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
+        verticalRotation = Mathf.Clamp(verticalRotation, -30f, 60f);
+
+        if (cameraTransform != null)
+        {
+            // Just update camera position locally if it IS a child (but we are moving away from that)
+            // cameraTransform.localEulerAngles = new Vector3(verticalRotation, 0, 0);
+        }
+        */
     }
     
     void CheckLedgeClimb()
