@@ -70,7 +70,7 @@ public class Pillow : MonoBehaviour
         }
         else if (collision.gameObject.CompareTag("Enemy"))
         {
-            EnemyNpc enemyNpc = collision.gameObject.GetComponent<EnemyNpc>();
+            EnemyNPC enemyNpc = collision.gameObject.GetComponent<EnemyNPC>();
             if (enemyNpc != null)
             {
                 enemyNpc.TakeDamage(damage);

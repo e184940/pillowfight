@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class EnemyNpc : MonoBehaviour
+public class EnemyNPC : MonoBehaviour
 {
     [Header("Movement")]
     public float npcSpeed = 3f;
