@@ -20,10 +20,10 @@ public class PillowCannon : MonoBehaviour
     
     [Header("Visual")]
     public GameObject muzzleFlash;
-    public AudioClip fireSound;
+    //public AudioClip fireSound;
     
     private float nextFireTime;
-    private AudioSource audioSource;
+    //private AudioSource audioSource;
     
     void Start()
     {
@@ -47,11 +47,13 @@ public class PillowCannon : MonoBehaviour
         }
         
         // Setup audio
+        /*
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null && fireSound != null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+        */
         
         nextFireTime = Time.time + 1f / fireRate;
     }
@@ -148,10 +150,12 @@ public class PillowCannon : MonoBehaviour
         }
         
         // Play sound
+        /*
         if (audioSource != null && fireSound != null)
         {
             audioSource.PlayOneShot(fireSound);
         }
+        */
     }
     
     // Debug visualization
